@@ -8,11 +8,10 @@
 #include "IUnityGraphicsD3D11.h" //specific unity graphics api
 /*We use the IUnityGraphics interface to give our plugin access to generic graphics device
 functionality.
-
 UNITY_INTERFACE_EXPORT is a macro, defined as _declspec(dllexport). This allows
 us to export data, functions, classes and class members from a dll.
 UNITY_INTERFACE_API is a macro, defined as _stdcall. This is a calling convention
-used to call Win32 API functions. 
+used to call Win32 API functions.
 A calling convention is an implementation-level scheme for how subroutines receive
 parameters from, and return results to, their caller.
 Any functions we want to be able to call from our C# script should be preceded by
@@ -93,7 +92,12 @@ extern "C" static void UNITY_INTERFACE_API OnRenderEvent(int eventId)
     Debug("Hello world!");
 }
 //This returns a function that unity can call whenever is needed
-UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API getEventFunction()
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API getEventFunction()
+{
+    Debug("Hello world!");
+}
+/*UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API getEventFunction()
 {
     return OnRenderEvent;
-}
+}*/

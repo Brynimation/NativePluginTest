@@ -1,1 +1,2 @@
 E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceDll\Dll1\x64\Debug\Dll1.dll
+C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceDll\Dll1\x64\Debug\Dll1.dll
