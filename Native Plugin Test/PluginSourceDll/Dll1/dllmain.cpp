@@ -93,8 +93,7 @@ HRESULT dllmain::CompileShader(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In
     ID3DBlob* shaderBlob = nullptr;
     ID3DBlob* errorBlob = nullptr;
     HRESULT hr = D3DCompileFromFile(srcFile, defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-        entryPoint, profile,
-        flags, 0, &shaderBlob, &errorBlob);
+        entryPoint, profile, flags, 0, &shaderBlob, &errorBlob);
     if (FAILED(hr))
     {
         if (errorBlob)
@@ -158,12 +157,23 @@ void dllmain::CreateResources()
     hr = CompileShader(pixelShaderPath, "frag", "ps_4_0_level_9_1", &psBlob);
     if (FAILED(hr)) 
     {
-        printf("Failed compiling pixel shader, hr)
+        printf("Failed compiling pixel shader %08X\n", hr);
     }
     hr = device->CreatePixelShader(vsBlob, sizeof(vsBlob), nullptr, &pixelShader);
     if (FAILED(hr))
     {
         printf("Failed to create pixel shader\n");
+    }
+
+    //Create input layout
+    if (vertexShader) 
+    {
+        //Description of a single element for the input assembler stage
+        D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = 
+        {
+            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+            {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+        }
     }
 }
 void dllmain::ReleaseResources()
