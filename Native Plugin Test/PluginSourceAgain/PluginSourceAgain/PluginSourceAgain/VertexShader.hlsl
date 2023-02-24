@@ -1,4 +1,4 @@
-cbuffer mycBuffer
+cbuffer mycBuffer :register(b0)
 {
 	float xOffset;
 	float yOffset;
@@ -11,25 +11,22 @@ cbuffer mycBuffer
 struct Attributes
 {
 	float3 position : POSITION;
-	float3 normal : NORMAL;
-	float2 uv : TEXCOORD0;
 	float4 colour : COLOR;
+
 };
 struct Interpolators
 {
 	float4 positionHCS : SV_POSITION;
-	float2 uv : TEXCOORD0;
 	float4 colour : COLOR;
 }
 
-float4 main(Attributes i : POSITION ) : SV_POSITION
+float4 vert(Attributes i : POSITION ) : SV_POSITION
 {
 	Interpolators o;
 	float4x4 VP = mul(P, V);
 	float4x4 MVP = mul(VP, M);
 
 	o.positionHCS = mul(MVP, o.posiion);
-	o.uv = i.uv;
 	o.colour = i.colour;
-	
+	return o;
 }

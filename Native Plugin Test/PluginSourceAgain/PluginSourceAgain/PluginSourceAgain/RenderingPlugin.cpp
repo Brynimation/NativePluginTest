@@ -10,25 +10,17 @@
 #include "D3D11RendererAPI.h";
 #include <d3dcompiler.h>
 #include <experimental/filesystem>;
+#include "Data.cpp";
 
 
-struct MeshVertex
-{
-	float pos[3];
-	float normal[3];
-	float colour[4];
-	float uv[2];
-};
 
-static DirectX::XMMatrix g_ModelMatrix;
-static DirectX::XMMatrix g_ViewMatrix;
-static DIRECTX::XMMatrix g_ProjectionMatrix;
+
 
 static IUnityInterfaces* s_Interfaces;
 static IUnityGraphics* s_Graphics;
 static UnityGfxRenderer s_RendererType;
 static D3D11RendererAPI* renderer;
-
+static ConstantBufferData g_ConstantBufferData;
 
 static float g_Time; //global variable: current time
 static void* g_VertexBufferHandle = NULL;
@@ -52,6 +44,12 @@ static std::vector<MeshVertex> g_Vertices; //vertex buffer
 
 extern "C" {
 
+	//This function is the one called from our C# script when we call GL.IssuePluginEvent()
+	UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc() 
+	{
+		return OnRenderEvent;
+	}
+
 	//This function is called when the plugin is loaded into unity. Any external script 
 	//that handles unity events must export UnityPluginLoad and UnityPluginUnload functions
 	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* unityInterfaces)
@@ -70,13 +68,13 @@ extern "C" {
 		g_Time = time;
 	}
 
-	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetShaderUniformsFromUnity() 
+	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetShaderUniformsFromUnity(ConstantBufferData cbd) 
 	{
-
+		g_ConstantBufferData = cbd;
 	}
 	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetMeshBuffersFromUnity
 	(void *vertexBufferHandle, int vertexCount, float* sourceVerts,
-	float *sourceNormals, float *sourceUVs)
+	float *sourceColours)
 	{
 		g_VertexBufferHandle = vertexBufferHandle;
 		g_VertexBufferCount = vertexCount;
@@ -94,15 +92,25 @@ extern "C" {
 			memory address. As arrays are blocks of memory stored contiguously,
 			we can increment a pointer to iterate over an array.*/
 			sourceVerts += 3;
-			vert.normal[0] = sourceNormals[0];
-			vert.normal[1] = sourceNormals[1];
-			vert.normal[2] = sourceNormals[2];
-			sourceNormals += 3;
-			vert.uv[0] = sourceUVs[0];
-			vert.uv[1] = sourceUVs[1];
-			sourceUVs += 3;
+			vert.colour[0] = sourceColours[0];
+			vert.colour[1] = sourceColours[1];
+			vert.colour[2] = sourceColours[2];
+			vert.colour[3] = sourceColours[3];
+			sourceColours += 4;
 
 		}
+	}
+}
+
+static void Draw() 
+{
+	renderer->Draw(g_ConstantBufferData);
+}
+static void UNITY_INTERFACE_API OnRenderEvent(int eventId) 
+{
+	if (renderer && !renderer->BufferEmpty()) 
+	{
+		Draw();
 	}
 }
 static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType) 
@@ -115,7 +123,7 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 		{
 			return;
 		}
-		renderer = new D3D11RendererAPI();
+		renderer = new D3D11RendererAPI(g_Vertices);
 	}
 	//if our renderer is not null, process the event
 	if (renderer) 

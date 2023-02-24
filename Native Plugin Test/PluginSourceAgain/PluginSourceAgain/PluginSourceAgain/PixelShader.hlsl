@@ -1,4 +1,9 @@
-float4 main() : SV_TARGET
+struct Interpolators
 {
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float4 positionHCS : SV_POSITION;
+	float4 colour : COLOR;
+};
+float4 frag(Interpolators i) : SV_TARGET
+{
+	return i.colour;
 }

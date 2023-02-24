@@ -6,6 +6,28 @@ using UnityEngine.Rendering;
 using System;
 using Unity.VisualScripting;
 
+public struct ConstantBufferData 
+{
+    float xOffset;
+    float yOffset;
+    float zOffset;
+
+    float[] M;
+    float[] V;
+    float[] P;
+
+    public ConstantBufferData(float xOffset, float yOffset, float zOffset,
+                              float[] M, float[] V, float[] P)
+    {
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.zOffset = zOffset;
+        this.M = M;
+        this.V = V;
+        this.P = P;
+    }
+}
+
 public class NativePluginCallerAgain : MonoBehaviour
 {
     [DllImport("NativePlugin")]
@@ -17,19 +39,33 @@ public class NativePluginCallerAgain : MonoBehaviour
     );
 
     [DllImport("NativePlugin")]
-    private static extern void SetShaderUniformsFromUnity(Matrix4x4 M, Matrix4x4 V, Matrix4x4 P);
+    private static extern void SetShaderUniformsFromUnity(ConstantBufferData cbd);
 
     [DllImport("NativePlugin")]
     private static extern IntPtr GetRenderEventFunc();
     private void SendMVPMatricesToPlugin() 
     {
-        Matrix4x4 M = transform.localToWorldMatrix;
-        Matrix4x4 V = Camera.main.worldToCameraMatrix;
-        Matrix4x4 P = Camera.main.projectionMatrix;
+        float[] M = MatrixToArray(transform.localToWorldMatrix);
+        float[] V = MatrixToArray(Camera.main.worldToCameraMatrix);
+        float[] P = MatrixToArray(Camera.main.projectionMatrix);
 
         GCHandle gcM = GCHandle.Alloc(M, GCHandleType.Pinned);
         GCHandle gcV = GCHandle.Alloc(V, GCHandleType.Pinned);
         GCHandle gcP = GCHandle.Alloc(P, GCHandleType.Pinned);
+        ConstantBufferData cbd = new ConstantBufferData(0, 0, 0, M, V, P);
+        SetShaderUniformsFromUnity(cbd);
+    }
+    private static float[] MatrixToArray(Matrix4x4 i) 
+    {
+        float[] o = new float[16];
+        for (int row = 0; row < 4; row++) 
+        {
+            for (int col = 0; col < 4; col++) 
+            {
+                o[row * 4 + col] = i[row,col];
+            }
+        }
+        return o;
     }
     private void SendMeshDataToPlugin() 
     {

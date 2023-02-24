@@ -42,7 +42,15 @@ HRESULT D3D11RendererAPI::CompileShader(_In_ LPCWSTR srcFile, _In_ LPCSTR entryP
     return hr;
 }
 
+D3D11RendererAPI::D3D11RendererAPI(std::vector<MeshVertex> verts) 
+{
+    this->verts = verts;
+}
 
+bool D3D11RendererAPI::BufferEmpty() 
+{
+    return verts.empty();
+}
 void D3D11RendererAPI::CreateResources()
 {
 
@@ -55,14 +63,19 @@ void D3D11RendererAPI::CreateResources()
     //&desc gets the memory address at which desc is stored
     memset(&desc, 0, sizeof(desc));
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.ByteWidth = 1024; //size of vertex buffer in bytes
+    desc.ByteWidth = 1024; //size of vertex buffer in bytes - sizeof(vertex) * arraySize'
     desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; //bind current buffer to the vertex buffer
-    device->CreateBuffer(&desc, NULL, &vertexBuffer);
+
+    //populate the vertex buffer with our vertices from unity
+    D3D11_SUBRESOURCE_DATA vertexBufferData;
+    MeshVertex* pVerts = &verts[0]; //Get pointer to the source vertices
+    vertexBufferData.pSysMem = pVerts;
+    device->CreateBuffer(&desc, &vertexBufferData, &vertexBuffer);
 
     //Initialise constant buffer - used to efficiently supply shader constants
     //to the pipeline.
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.ByteWidth = 64; //holds the world matrix?
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.ByteWidth = 1024; //sizeof(cbufferData) + ((16 - sizeof(cbufferData))%16)
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     desc.CPUAccessFlags = 0;
     device->CreateBuffer(&desc, NULL, &constantBuffer);
@@ -103,8 +116,9 @@ void D3D11RendererAPI::CreateResources()
             {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
             {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
         };
+        device->CreateInputLayout(inputElementDesc, 2, vsBlob, sizeof(vsBlob), &inputLayout);
     }
-    // render states
+    // render states (below is all boilerplate code)
     D3D11_RASTERIZER_DESC rsdesc;
     memset(&rsdesc, 0, sizeof(rsdesc));
     rsdesc.FillMode = D3D11_FILL_SOLID;
@@ -129,15 +143,41 @@ void D3D11RendererAPI::ReleaseResources()
 {
 
 }
-void D3D11RendererAPI::Draw()
+void D3D11RendererAPI::Draw(ConstantBufferData cbData)
 {
     //Get the device context, which allows us to actually issue rendering commands
     ID3D11DeviceContext* context = NULL;
     device->GetImmediateContext(&context);
 
+    //Set basic render state
     context->OMSetDepthStencilState(depthStencilState, 0);
     context->RSSetState(rasterizerState);
     context->OMSetBlendState(blendState, NULL, 0xFFFFFFFF);
+
+
+    //Update the constant buffer with all our shader uniforms
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    //The Map function gets a pointer to the data contained in a subresource
+    //(ie, our constant buffer), and denies the GPU access to that subresource.
+    //
+    HRESULT hr = context->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    //We now copy the data within cbData into the pData field of our mapped sub resource
+    CopyMemory(mappedResource.pData, &cbData, sizeof(ConstantBufferData));
+    //We now unmap the subresource to allow the gpu to access it once more
+    context->Unmap(constantBuffer, 0);
+
+    //Set shaders
+    context->VSSetConstantBuffers(0, 1, &constantBuffer);
+    context->VSSetShader(vertexShader, NULL, 0);
+    context->PSSetShader(pixelShader, NULL, 0);
+
+    //Set input assembler data
+    context->IASetInputLayout(inputLayout);
+    context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    UINT stride = sizeof(MeshVertex);
+    UINT offset = 0;
+    context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    context->Draw(verts.size(), 0);
 }
 void D3D11RendererAPI::OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType, IUnityInterfaces* interfaces)
 {
