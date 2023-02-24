@@ -6,7 +6,9 @@
 #include "IUnityGraphics.h";
 #include "IUnityGraphicsD3D11.h";
 #include "d3d11.h";
+#include "DirectXMath.h"
 #include "D3D11RendererAPI.h";
+#include <d3dcompiler.h>
 #include <experimental/filesystem>;
 
 
@@ -18,6 +20,10 @@ struct MeshVertex
 	float uv[2];
 };
 
+static DirectX::XMMatrix g_ModelMatrix;
+static DirectX::XMMatrix g_ViewMatrix;
+static DIRECTX::XMMatrix g_ProjectionMatrix;
+
 static IUnityInterfaces* s_Interfaces;
 static IUnityGraphics* s_Graphics;
 static UnityGfxRenderer s_RendererType;
@@ -27,6 +33,11 @@ static D3D11RendererAPI* renderer;
 static float g_Time; //global variable: current time
 static void* g_VertexBufferHandle = NULL;
 static int g_VertexBufferCount = 0;
+
+static void* g_ConstantBufferHandle = NULL;
+
+
+
 
 
 static std::vector<MeshVertex> g_Vertices; //vertex buffer
@@ -43,22 +54,26 @@ extern "C" {
 
 	//This function is called when the plugin is loaded into unity. Any external script 
 	//that handles unity events must export UnityPluginLoad and UnityPluginUnload functions
-	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces * unityInterfaces) 
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* unityInterfaces)
 	{
 		s_Interfaces = unityInterfaces->Get<IUnityInterfaces>();
 		s_Graphics = unityInterfaces->Get<IUnityGraphics>();
 		s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
-		
+
 		//The above provides us with access to the graphics device and hence the ability to
 		//access all stages of the D3D11 rendering pipeline
 	}
 
 	//called every frame from the update function in our useRenderingPlugin.cs script
-	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetTimeFromUnity(float time) 
+	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetTimeFromUnity(float time)
 	{
 		g_Time = time;
 	}
 
+	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetShaderUniformsFromUnity() 
+	{
+
+	}
 	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetMeshBuffersFromUnity
 	(void *vertexBufferHandle, int vertexCount, float* sourceVerts,
 	float *sourceNormals, float *sourceUVs)

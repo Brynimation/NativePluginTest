@@ -14,6 +14,7 @@ struct ConstantBufferData
 class D3D11RendererAPI
 {
 public:
+    D3D11RendererAPI()
     void OnGraphicsDeviceEvent(UnityGfxDeviceEventType type, IUnityInterfaces* intefaces);
     void GetUsesReverseZ();
     void Draw();
