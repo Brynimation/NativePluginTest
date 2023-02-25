@@ -49,9 +49,9 @@ public class NativePluginCallerAgain : MonoBehaviour
         float[] V = MatrixToArray(Camera.main.worldToCameraMatrix);
         float[] P = MatrixToArray(Camera.main.projectionMatrix);
 
-        GCHandle gcM = GCHandle.Alloc(M, GCHandleType.Pinned);
+        /*GCHandle gcM = GCHandle.Alloc(M, GCHandleType.Pinned);
         GCHandle gcV = GCHandle.Alloc(V, GCHandleType.Pinned);
-        GCHandle gcP = GCHandle.Alloc(P, GCHandleType.Pinned);
+        GCHandle gcP = GCHandle.Alloc(P, GCHandleType.Pinned);*/
         ConstantBufferData cbd = new ConstantBufferData(0, 0, 0, M, V, P);
         SetShaderUniformsFromUnity(cbd);
     }

@@ -1,3 +1,4 @@
-﻿FXC : error X3501: 'main': entrypoint not found
-  
-  compilation failed; no code produced
+﻿  RenderingPlugin.cpp
+     Creating library E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.lib and object E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.exp
+D3D11RendererAPI.obj : error LNK2019: unresolved external symbol D3DCompileFromFile referenced in function "public: long __cdecl D3D11RendererAPI::CompileShader(wchar_t const *,char const *,char const *,struct ID3D10Blob * *)" (?CompileShader@D3D11RendererAPI@@QEAAJPEB_WPEBD1PEAPEAUID3D10Blob@@@Z)
+E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.dll : fatal error LNK1120: 1 unresolved externals

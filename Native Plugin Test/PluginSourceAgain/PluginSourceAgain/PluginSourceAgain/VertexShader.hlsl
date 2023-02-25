@@ -18,15 +18,15 @@ struct Interpolators
 {
 	float4 positionHCS : SV_POSITION;
 	float4 colour : COLOR;
-}
+};
 
-float4 vert(Attributes i : POSITION ) : SV_POSITION
+Interpolators main(Attributes i)
 {
 	Interpolators o;
 	float4x4 VP = mul(P, V);
 	float4x4 MVP = mul(VP, M);
 
-	o.positionHCS = mul(MVP, o.posiion);
+	o.positionHCS = mul(MVP, i.position);
 	o.colour = i.colour;
 	return o;
 }

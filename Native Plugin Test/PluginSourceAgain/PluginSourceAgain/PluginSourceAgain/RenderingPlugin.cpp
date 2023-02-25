@@ -3,23 +3,13 @@
  https://docs.unity3d.com/Manual/NativePluginInterface.html
 */
 
-#include "IUnityGraphics.h";
-#include "IUnityGraphicsD3D11.h";
-#include "d3d11.h";
-#include "DirectXMath.h"
-#include "D3D11RendererAPI.h";
-#include <d3dcompiler.h>
-#include <experimental/filesystem>;
-#include "Data.cpp";
+#include "D3D11RendererAPI.h"
+#include <stddef.h>
 
-
-
-
-
-static IUnityInterfaces* s_Interfaces;
-static IUnityGraphics* s_Graphics;
-static UnityGfxRenderer s_RendererType;
-static D3D11RendererAPI* renderer;
+static IUnityInterfaces* s_Interfaces = NULL;
+static IUnityGraphics* s_Graphics = NULL;
+static UnityGfxRenderer s_RendererType = kUnityGfxRendererNull;
+static D3D11RendererAPI* renderer = NULL;
 static ConstantBufferData g_ConstantBufferData;
 
 static float g_Time; //global variable: current time
@@ -41,38 +31,70 @@ static std::vector<MeshVertex> g_Vertices; //vertex buffer
 // To retrieve an interface a user can do the following from a plugin, assuming they have the header file for the interface:
 //
 // IMyInterface * ptr = registry->Get<IMyInterface>();
-
-extern "C" {
-
-	//This function is the one called from our C# script when we call GL.IssuePluginEvent()
-	UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc() 
+static void Draw()
+{
+	renderer->Draw(g_ConstantBufferData);
+}
+static void UNITY_INTERFACE_API OnRenderEvent(int eventId)
+{
+	if (renderer && !renderer->BufferEmpty())
 	{
-		return OnRenderEvent;
+		Draw();
 	}
-
+}
+static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
+{
+	if (eventType == kUnityGfxDeviceEventInitialize)
+	{
+		//only support D3D11 for the time being
+		s_RendererType = s_Graphics->GetRenderer();
+		if (!(s_RendererType == kUnityGfxRendererD3D11))
+		{
+			return;
+		}
+		renderer = new D3D11RendererAPI(g_Vertices);
+	}
+	//if our renderer is not null, process the event
+	if (renderer)
+	{
+		renderer->OnGraphicsDeviceEvent(eventType, s_Interfaces);
+	}
+	if (eventType == kUnityGfxDeviceEventShutdown)
+	{
+		delete renderer;
+		renderer = NULL;
+		s_RendererType = kUnityGfxRendererNull;
+	}
+}
+extern "C" {
+	
 	//This function is called when the plugin is loaded into unity. Any external script 
 	//that handles unity events must export UnityPluginLoad and UnityPluginUnload functions
 	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* unityInterfaces)
 	{
-		s_Interfaces = unityInterfaces->Get<IUnityInterfaces>();
+		s_Interfaces = unityInterfaces;
 		s_Graphics = unityInterfaces->Get<IUnityGraphics>();
 		s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
 
 		//The above provides us with access to the graphics device and hence the ability to
 		//access all stages of the D3D11 rendering pipeline
 	}
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginUnload() 
+	{
+		s_Graphics->UnregisterDeviceEventCallback(OnGraphicsDeviceEvent);
+	}
 
 	//called every frame from the update function in our useRenderingPlugin.cs script
-	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetTimeFromUnity(float time)
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  SetTimeFromUnity(float time)
 	{
 		g_Time = time;
 	}
 
-	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetShaderUniformsFromUnity(ConstantBufferData cbd) 
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  SetShaderUniformsFromUnity(ConstantBufferData cbd)
 	{
 		g_ConstantBufferData = cbd;
 	}
-	void UNITY_INTERFACE_API UNITY_INTERFACE_EXPORT SetMeshBuffersFromUnity
+	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  SetMeshBuffersFromUnity
 	(void *vertexBufferHandle, int vertexCount, float* sourceVerts,
 	float *sourceColours)
 	{
@@ -100,34 +122,11 @@ extern "C" {
 
 		}
 	}
+	
+	//This function is the one called from our C# script when we call GL.IssuePluginEvent()
+	UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
+	{
+		return OnRenderEvent;
+	}
 }
 
-static void Draw() 
-{
-	renderer->Draw(g_ConstantBufferData);
-}
-static void UNITY_INTERFACE_API OnRenderEvent(int eventId) 
-{
-	if (renderer && !renderer->BufferEmpty()) 
-	{
-		Draw();
-	}
-}
-static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType) 
-{
-	if (eventType == kUnityGfxDeviceEventInitialize) 
-	{
-		//only support D3D11 for the time being
-		s_RendererType = s_Graphics->GetRenderer();
-		if (!(s_RendererType == kUnityGfxRendererD3D11)) 
-		{
-			return;
-		}
-		renderer = new D3D11RendererAPI(g_Vertices);
-	}
-	//if our renderer is not null, process the event
-	if (renderer) 
-	{
-		renderer->OnGraphicsDeviceEvent(eventType, s_Interfaces);
-	}
-}

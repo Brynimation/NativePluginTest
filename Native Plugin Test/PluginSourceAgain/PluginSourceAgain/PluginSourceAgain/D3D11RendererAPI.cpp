@@ -1,4 +1,4 @@
-#include "D3D11RendererAPI.h";
+#include "D3D11RendererAPI.h"
 //Here's to help you tomorrow: https://www.youtube.com/watch?v=sjt1Lury6vk
 
 HRESULT D3D11RendererAPI::CompileShader(_In_ LPCWSTR srcFile, _In_ LPCSTR entryPoint, _In_ LPCSTR profile, _Outptr_ ID3DBlob** blob)
@@ -45,6 +45,18 @@ HRESULT D3D11RendererAPI::CompileShader(_In_ LPCWSTR srcFile, _In_ LPCSTR entryP
 D3D11RendererAPI::D3D11RendererAPI(std::vector<MeshVertex> verts) 
 {
     this->verts = verts;
+    device = nullptr;
+    shaderFilePath = L"";
+    context = nullptr;
+    vertexBuffer = nullptr;
+    vertexShaderBlob = nullptr;
+    constantBuffer = nullptr;
+    vertexShader = nullptr;
+    pixelShader = nullptr;
+    inputLayout = nullptr;
+    rasterizerState = nullptr;
+    blendState = nullptr;
+    depthStencilState = nullptr;
 }
 
 bool D3D11RendererAPI::BufferEmpty() 
@@ -82,7 +94,7 @@ void D3D11RendererAPI::CreateResources()
 
     //create vertex shader
     ID3DBlob* vsBlob = nullptr;
-    HRESULT hr = CompileShader(vertexShaderPath, "vert", "vs_4_0_level_9_1", &vsBlob);
+    HRESULT hr = CompileShader(vertexShaderPath, "main", "vs_5_0", &vsBlob);
     if (FAILED(hr))
     {
         printf("Failed compiling vertex shader %08X\n", hr);
@@ -96,7 +108,7 @@ void D3D11RendererAPI::CreateResources()
 
     //Create pixel shader
     ID3DBlob* psBlob = nullptr;
-    hr = CompileShader(pixelShaderPath, "frag", "ps_4_0_level_9_1", &psBlob);
+    hr = CompileShader(pixelShaderPath, "main", "ps_5_0", &psBlob);
     if (FAILED(hr))
     {
         printf("Failed compiling pixel shader %08X\n", hr);
@@ -139,9 +151,21 @@ void D3D11RendererAPI::CreateResources()
     bdesc.RenderTarget[0].RenderTargetWriteMask = 0xF;
     device->CreateBlendState(&bdesc, &blendState);
 }
+
 void D3D11RendererAPI::ReleaseResources()
 {
-
+    this->verts = verts;
+    if (device) device->Release();
+    if(context)context->Release(); 
+    if(vertexBuffer)vertexBuffer->Release();
+    if(vertexShaderBlob)vertexShaderBlob->Release();
+    if (constantBuffer)constantBuffer->Release();
+    if(vertexShader)vertexShader->Release();
+    if(pixelShader)pixelShader->Release();
+    if(inputLayout)inputLayout->Release();
+    if(rasterizerState)rasterizerState->Release();
+    if(blendState)blendState->Release();
+    if(depthStencilState)depthStencilState->Release();
 }
 void D3D11RendererAPI::Draw(ConstantBufferData cbData)
 {
@@ -177,7 +201,7 @@ void D3D11RendererAPI::Draw(ConstantBufferData cbData)
     UINT stride = sizeof(MeshVertex);
     UINT offset = 0;
     context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-    context->Draw(verts.size(), 0);
+    context->Draw(verts.size(), (UINT)0);
 }
 void D3D11RendererAPI::OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType, IUnityInterfaces* interfaces)
 {

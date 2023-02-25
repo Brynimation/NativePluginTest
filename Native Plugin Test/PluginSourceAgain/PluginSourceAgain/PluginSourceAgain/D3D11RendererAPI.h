@@ -1,11 +1,10 @@
-#include "IUnityInterface.h"
-#include "IUnityGraphics.h";
-#include "IUnityGraphicsD3D11.h";
-#include "d3d11.h";
-#include "DirectXMath.h"
+#include "IUNITYGRAPHICS.H"
+#include "d3d11.h"
+#include "IUnityGraphicsD3D11.h"
 #include <d3dcompiler.h>
-#include <experimental/filesystem>;
-#include "Data.cpp";
+#include <filesystem>
+#include <vector>
+#include "Data.cpp"
 
 
 class D3D11RendererAPI
