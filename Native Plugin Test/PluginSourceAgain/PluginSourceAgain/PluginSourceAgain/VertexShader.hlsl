@@ -23,10 +23,13 @@ struct Interpolators
 Interpolators main(Attributes i)
 {
 	Interpolators o;
+	float3 posOffset = float3(xOffset, yOffset, zOffset);
 	float4x4 VP = mul(P, V);
 	float4x4 MVP = mul(VP, M);
+	float3 posWorldSpace = mul(M, i.position);
+	posWorldSpace += posOffset;
 
-	o.positionHCS = mul(MVP, i.position);
+	o.positionHCS = mul(VP, posWorldSpace);
 	o.colour = i.colour;
 	return o;
 }

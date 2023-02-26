@@ -1,4 +1,5 @@
-﻿  RenderingPlugin.cpp
-     Creating library E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.lib and object E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.exp
-D3D11RendererAPI.obj : error LNK2019: unresolved external symbol D3DCompileFromFile referenced in function "public: long __cdecl D3D11RendererAPI::CompileShader(wchar_t const *,char const *,char const *,struct ID3D10Blob * *)" (?CompileShader@D3D11RendererAPI@@QEAAJPEB_WPEBD1PEAPEAUID3D10Blob@@@Z)
-E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.dll : fatal error LNK1120: 1 unresolved externals
+﻿  D3D11RendererAPI.cpp
+E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\D3D11RendererAPI.cpp(205,40): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
+  RenderingPlugin.cpp
+  Generating Code...
+  PluginSourceAgain.vcxproj -> E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.dll

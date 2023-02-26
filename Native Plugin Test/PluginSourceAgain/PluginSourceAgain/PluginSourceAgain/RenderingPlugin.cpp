@@ -2,9 +2,12 @@
 * https://github.com/Unity-Technologies/NativeRenderingPlugin
  https://docs.unity3d.com/Manual/NativePluginInterface.html
 */
-
-#include "D3D11RendererAPI.h"
+#include <stdlib.h>
+#include <iostream>
 #include <stddef.h>
+#include "D3D11RendererAPI.h"
+
+using namespace std;
 
 static IUnityInterfaces* s_Interfaces = NULL;
 static IUnityGraphics* s_Graphics = NULL;
@@ -33,15 +36,10 @@ static std::vector<MeshVertex> g_Vertices; //vertex buffer
 // IMyInterface * ptr = registry->Get<IMyInterface>();
 static void Draw()
 {
+	printf("draw");
 	renderer->Draw(g_ConstantBufferData);
 }
-static void UNITY_INTERFACE_API OnRenderEvent(int eventId)
-{
-	if (renderer && !renderer->BufferEmpty())
-	{
-		Draw();
-	}
-}
+
 static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
 {
 	if (eventType == kUnityGfxDeviceEventInitialize)
@@ -66,7 +64,15 @@ static void UNITY_INTERFACE_API OnGraphicsDeviceEvent(UnityGfxDeviceEventType ev
 		s_RendererType = kUnityGfxRendererNull;
 	}
 }
+static void UNITY_INTERFACE_API OnRenderEvent(int eventId)
+{
+	if (renderer && !renderer->BufferEmpty())
+	{
+		Draw();
+	}
+}
 extern "C" {
+
 	
 	//This function is called when the plugin is loaded into unity. Any external script 
 	//that handles unity events must export UnityPluginLoad and UnityPluginUnload functions
@@ -94,13 +100,16 @@ extern "C" {
 	{
 		g_ConstantBufferData = cbd;
 	}
+	UNITY_INTERFACE_EXPORT const char* Hello()
+	{
+		return "Hello World!";
+	}
 	void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API  SetMeshBuffersFromUnity
 	(void *vertexBufferHandle, int vertexCount, float* sourceVerts,
 	float *sourceColours)
 	{
 		g_VertexBufferHandle = vertexBufferHandle;
 		g_VertexBufferCount = vertexCount;
-		
 		g_Vertices.resize(vertexCount);
 		//Fill the vertex buffer from all of our c# arrays
 		for(int i = 0; i < vertexCount; i++)
@@ -122,7 +131,6 @@ extern "C" {
 
 		}
 	}
-	
 	//This function is the one called from our C# script when we call GL.IssuePluginEvent()
 	UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
 	{

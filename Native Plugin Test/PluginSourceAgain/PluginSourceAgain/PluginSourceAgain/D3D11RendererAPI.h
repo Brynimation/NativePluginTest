@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <vector>
 #include "Data.cpp"
+#pragma comment (lib, "D3DCompiler.lib")
 
 
 class D3D11RendererAPI

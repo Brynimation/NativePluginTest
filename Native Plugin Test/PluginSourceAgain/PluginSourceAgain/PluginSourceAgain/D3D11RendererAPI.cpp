@@ -70,6 +70,7 @@ void D3D11RendererAPI::CreateResources()
     LPCWSTR vertexShaderPath = L"\\Shaders\\VertexShader.hlsl";
     LPCWSTR pixelShaderPath = L"\\Shaders\\PixelShader.hlsl";
 
+    
     //Initialise vertex buffer
     D3D11_BUFFER_DESC desc; //STRUCT: describes a buffer resource
     //&desc gets the memory address at which desc is stored

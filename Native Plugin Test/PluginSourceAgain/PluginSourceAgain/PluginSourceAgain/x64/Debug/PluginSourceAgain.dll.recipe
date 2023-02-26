@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.dll</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PixelShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\VertexShader.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
