@@ -2,7 +2,70 @@
 * https://github.com/Unity-Technologies/NativeRenderingPlugin
  https://docs.unity3d.com/Manual/NativePluginInterface.html
 */
-#include <stdlib.h>
+
+#include "Graphics.h"
+
+static IUnityInterfaces* s_UnityInterfaces = nullptr;
+static IUnityGraphics* s_Graphics = nullptr;
+static UnityGfxRenderer s_RendererType = kUnityGfxRendererNull;
+static Graphics s_GraphicsRenderer = NULL;
+
+// Unity plugin load event
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UnityPluginLoad(IUnityInterfaces * unityInterfaces)
+{
+	s_UnityInterfaces = unityInterfaces;
+	s_Graphics = unityInterfaces->Get<IUnityGraphics>();
+
+	s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
+
+	// Run OnGraphicsDeviceEvent(initialize) manually on plugin load
+	// to not miss the event in case the graphics device is already initialized
+	OnGraphicsDeviceEvent(kUnityGfxDeviceEventInitialize);
+}
+
+// Unity plugin unload event
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UnityPluginUnload()
+{
+	s_Graphics->UnregisterDeviceEventCallback(OnGraphicsDeviceEvent);
+}
+
+static void UNITY_INTERFACE_API
+OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
+{
+	switch (eventType)
+	{
+	case kUnityGfxDeviceEventInitialize:
+	{
+		s_RendererType = s_Graphics->GetRenderer();
+		if (s_RendererType == kUnityGfxRendererD3D11) 
+		{
+			IUnityGraphicsD3D11* d3d = s_UnityInterfaces->Get<IUnityGraphicsD3D11>();
+			s_GraphicsRenderer = Graphics(d3d->GetDevice());
+		}
+		break;
+	}
+	case kUnityGfxDeviceEventShutdown:
+	{
+		s_RendererType = kUnityGfxRendererNull;
+		//TODO: user shutdown code
+		break;
+	}
+	case kUnityGfxDeviceEventBeforeReset:
+	{
+		//TODO: user Direct3D 9 code
+		break;
+	}
+	case kUnityGfxDeviceEventAfterReset:
+	{
+		//TODO: user Direct3D 9 code
+		break;
+	}
+	};
+}
+
+/*#include <stdlib.h>
 #include <iostream>
 #include <stddef.h>
 #include "D3D11RendererAPI.h"
@@ -121,7 +184,7 @@ extern "C" {
 			vert.pos[2] = sourceVerts[2];
 			/*Incrementing pointers in c++ means the pointer points to the next
 			memory address. As arrays are blocks of memory stored contiguously,
-			we can increment a pointer to iterate over an array.*/
+			we can increment a pointer to iterate over an array.
 			sourceVerts += 3;
 			vert.colour[0] = sourceColours[0];
 			vert.colour[1] = sourceColours[1];
@@ -138,3 +201,4 @@ extern "C" {
 	}
 }
 
+*/
