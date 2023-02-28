@@ -1,4 +1,4 @@
-#include "IUnityInterface.h"
+#include "IUNITYINTERFACE.h"
 #include "IUnityGraphics.h"
 #include <d3d11.h>
 #include "IUnityGraphicsD3D11.h"
@@ -12,6 +12,7 @@ public:
 	bool InitialiseDirectD3D11();
 	bool InitialiseShaders();
 	bool InitialiseScene();
+	void Draw();
 private:
 	ID3D11Device* device;
 	ID3D11DeviceContext* context;

@@ -8,28 +8,7 @@
 static IUnityInterfaces* s_UnityInterfaces = nullptr;
 static IUnityGraphics* s_Graphics = nullptr;
 static UnityGfxRenderer s_RendererType = kUnityGfxRendererNull;
-static Graphics s_GraphicsRenderer = NULL;
-
-// Unity plugin load event
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
-UnityPluginLoad(IUnityInterfaces * unityInterfaces)
-{
-	s_UnityInterfaces = unityInterfaces;
-	s_Graphics = unityInterfaces->Get<IUnityGraphics>();
-
-	s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
-
-	// Run OnGraphicsDeviceEvent(initialize) manually on plugin load
-	// to not miss the event in case the graphics device is already initialized
-	OnGraphicsDeviceEvent(kUnityGfxDeviceEventInitialize);
-}
-
-// Unity plugin unload event
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
-UnityPluginUnload()
-{
-	s_Graphics->UnregisterDeviceEventCallback(OnGraphicsDeviceEvent);
-}
+static Graphics* s_GraphicsRenderer = NULL;
 
 static void UNITY_INTERFACE_API
 OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
@@ -39,10 +18,12 @@ OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
 	case kUnityGfxDeviceEventInitialize:
 	{
 		s_RendererType = s_Graphics->GetRenderer();
-		if (s_RendererType == kUnityGfxRendererD3D11) 
+		if (s_RendererType == kUnityGfxRendererD3D11)
 		{
 			IUnityGraphicsD3D11* d3d = s_UnityInterfaces->Get<IUnityGraphicsD3D11>();
-			s_GraphicsRenderer = Graphics(d3d->GetDevice());
+			s_GraphicsRenderer = new Graphics(d3d->GetDevice());
+			s_GraphicsRenderer->InitialiseShaders();
+			s_GraphicsRenderer->InitialiseScene();
 		}
 		break;
 	}
@@ -64,6 +45,45 @@ OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType)
 	}
 	};
 }
+
+// Unity plugin load event
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UnityPluginLoad(IUnityInterfaces * unityInterfaces)
+{
+	s_UnityInterfaces = unityInterfaces;
+	s_Graphics = unityInterfaces->Get<IUnityGraphics>();
+
+	s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
+
+	// Run OnGraphicsDeviceEvent(initialize) manually on plugin load
+	// to not miss the event in case the graphics device is already initialized
+	OnGraphicsDeviceEvent(kUnityGfxDeviceEventInitialize);
+}
+
+// Unity plugin unload event
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UnityPluginUnload()
+{
+	s_Graphics->UnregisterDeviceEventCallback(OnGraphicsDeviceEvent);
+}
+
+void Draw() 
+{
+	s_GraphicsRenderer->Draw();
+}
+static void UNITY_INTERFACE_API OnRenderEvent(int eventId)
+{
+	if (s_GraphicsRenderer)
+	{
+		Draw();
+	}
+}
+extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRenderEventFunc()
+{
+	return OnRenderEvent;
+}
+
 
 /*#include <stdlib.h>
 #include <iostream>

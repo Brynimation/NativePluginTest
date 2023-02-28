@@ -1,5 +1,8 @@
-﻿  D3D11RendererAPI.cpp
-E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\D3D11RendererAPI.cpp(205,40): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
+﻿  Graphics.cpp
+C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\Graphics.cpp(35,16): warning C4101: 'vert3': unreferenced local variable
+C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\Graphics.cpp(34,16): warning C4101: 'vert2': unreferenced local variable
   RenderingPlugin.cpp
   Generating Code...
-  PluginSourceAgain.vcxproj -> E:\Unity\Native code plugin\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.dll
+C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\Graphics.cpp(29): warning C4715: 'Graphics::InitialiseShaders': not all control paths return a value
+     Creating library C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.lib and object C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.exp
+  PluginSourceAgain.vcxproj -> C:\Users\brynl\University\Year 3\Native Plugin Test\NativePluginTest\Native Plugin Test\PluginSourceAgain\PluginSourceAgain\PluginSourceAgain\x64\Debug\PluginSourceAgain.dll

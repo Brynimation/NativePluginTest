@@ -2,7 +2,7 @@
 #include "d3d11.h"
 #include <d3dcompiler.h>
 #include <filesystem>
-#pragma comment(lib, "D3DComipler.lib")
+#pragma comment(lib, "D3DCompiler.lib")
 
 class VertexShader 
 {

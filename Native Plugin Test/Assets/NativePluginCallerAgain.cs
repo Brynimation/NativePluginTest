@@ -34,7 +34,7 @@ public class NativePluginCallerAgain : MonoBehaviour
     [SerializeField] float yOffset;
     [SerializeField] float zOffset;
     const string dll = "PluginSourceAgain";
-    [DllImport(dll)]
+   /* [DllImport(dll)]
 
     private static extern void SetTimeFromUnity(float time);
     [DllImport(dll)]
@@ -46,20 +46,20 @@ public class NativePluginCallerAgain : MonoBehaviour
     );
 
     [DllImport(dll)]
-    private static extern void SetShaderUniformsFromUnity(ConstantBufferData cbd);
+    private static extern void SetShaderUniformsFromUnity(ConstantBufferData cbd);*/
 
     [DllImport(dll)]
     private static extern IntPtr GetRenderEventFunc();
-    private void SendMVPMatricesToPlugin() 
+   /* private void SendMVPMatricesToPlugin() 
     {
         Debug.Log("sending uniforms");
         float[] M = MatrixToArray(transform.localToWorldMatrix);
         float[] V = MatrixToArray(Camera.main.worldToCameraMatrix);
         float[] P = MatrixToArray(Camera.main.projectionMatrix);
 
-        /*GCHandle gcM = GCHandle.Alloc(M, GCHandleType.Pinned);
+        GCHandle gcM = GCHandle.Alloc(M, GCHandleType.Pinned);
         GCHandle gcV = GCHandle.Alloc(V, GCHandleType.Pinned);
-        GCHandle gcP = GCHandle.Alloc(P, GCHandleType.Pinned);*/
+        GCHandle gcP = GCHandle.Alloc(P, GCHandleType.Pinned);
         ConstantBufferData cbd = new ConstantBufferData(xOffset, yOffset, zOffset, M, V, P);
         SetShaderUniformsFromUnity(cbd);
     }
@@ -100,11 +100,11 @@ public class NativePluginCallerAgain : MonoBehaviour
         gcVerts.Free();
         gcColours.Free();
     }
-
+*/
     
     void Start()
     {
-        SendMeshDataToPlugin();
+        //SendMeshDataToPlugin();
         StartCoroutine(PassData());
     }
 
@@ -113,8 +113,8 @@ public class NativePluginCallerAgain : MonoBehaviour
         while (true) 
         {
             yield return new WaitForEndOfFrame();
-            SendMVPMatricesToPlugin();
-            SetTimeFromUnity(Time.timeSinceLevelLoad);
+            //SendMVPMatricesToPlugin();
+            //SetTimeFromUnity(Time.timeSinceLevelLoad);
             GL.IssuePluginEvent(GetRenderEventFunc(), 0);
         }
     }

@@ -6,7 +6,7 @@ Graphics::Graphics(ID3D11Device* device)
 }
 bool Graphics::InitialiseDirectD3D11() 
 {
-
+    return true;
 }
 
 bool Graphics::InitialiseShaders() 
@@ -31,9 +31,15 @@ bool Graphics::InitialiseScene()
 {
     //Initialise vertex buffer
     MeshVertex vert1;
+    MeshVertex vert2;
+    MeshVertex vert3;
     vert1.pos[0] = 0.5;
     vert1.pos[1] = 0.5;
     vert1.pos[2] = 0.5;
+    vert1.colour[0] = 1.0;
+    vert1.colour[1] = 1.0;
+    vert1.colour[2] = 1.0;
+    vert1.colour[3] = 1.0;
     MeshVertex verts[1]
     {
         vert1
@@ -60,5 +66,22 @@ bool Graphics::InitialiseScene()
     return true;
 }
 
+void Graphics::Draw() 
+{
+  
+    device->GetImmediateContext(&context);
+    context->VSSetShader(vertexShader.vertexShader, NULL, 0);
+    context->PSSetShader(pixelShader.pixelShader, NULL, 0);
+
+    //Set input assembler data
+    context->IASetInputLayout(vertexShader.inputLayout);
+    context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+    UINT stride = sizeof(MeshVertex);
+    UINT offset = 0;
+    context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+    //ctx->UpdateSubresource(vertexBuffer, 0, NULL, verts, triangleCount * 3 * kVertexSize, 0);
+    context->Draw(sizeof(vertexBuffer), (UINT)0);
+}
+
 //create vertex buffer
-//Draw
+//Draw  ASX

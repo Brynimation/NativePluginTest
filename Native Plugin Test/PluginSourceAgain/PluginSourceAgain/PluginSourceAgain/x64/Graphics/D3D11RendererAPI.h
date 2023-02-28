@@ -1,4 +1,4 @@
-/*#include "IUNITYGRAPHICS.H"
+#include "IUNITYGRAPHICS.H"
 #include "d3d11.h"
 #include "IUnityGraphicsD3D11.h"
 #include <d3dcompiler.h>
@@ -42,7 +42,7 @@ private:
     std::vector<MeshVertex> verts;
 };
 
-*/
+
 //SAL Annotations are a set of annotations that describe how a function uses its return types.
 //HRESULT is a data type that represents the completion status of a function.
 //LPCSTR is a Long Pointer to a Constant String

@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>F:\UnityEditor2021Download\Unity 2021.3.11f1\Editor\Data\PluginAPI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Unity 2021.3.18f1\Editor\Data\PluginAPI</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -133,12 +133,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="D3D11RendererAPI.cpp" />
     <ClCompile Include="Data.cpp" />
-    <ClCompile Include="RenderingPlugin.cpp" />
+    <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="RenderingPlugin.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Unity 2021.3.18f1\Editor\Data\PluginAPI</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="Shaders.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D3D11RendererAPI.h" />
+    <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Shaders.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
