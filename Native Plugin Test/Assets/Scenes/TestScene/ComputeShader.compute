@@ -1,0 +1,98 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "helpers.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+//We need an input struct and an output. SourceVertex describes a vertex on the source mesh.
+struct SourceVertex{
+    float3 positionOS;
+    float2 uv;
+}
+
+//DrawVertex describes a vertex on the output mesh.
+struct DrawVertex{
+    float3 positionWS;
+    float2 uv;
+}
+
+//We have to insert three draw vertices at once so the triangle stays connected.
+struct DrawTriangle
+{
+    float3 normalWS; //triangle normal; all 3 verts share this normal
+    DrawVertex verts[3];
+}
+
+
+
+//Compute buffers
+//The source geometry will be represented using two buffers: one for the vertices and one for the triangles
+StructuredBuffer<SourceVertex> _SourceVertices;
+StructuredBuffer<int> _SourceTriangles; //3 consecutive indices represent a triangle.
+//The output geometry buffer will be represented with an AppendStructuredBuffer (which behaves like a stack) of DrawTriangle objects
+AppendStructuredBuffer<DrawTriangle> _DrawTriangles;
+
+int _NumSourceTriangles;
+float _PyramidHeight;
+float4x4 _LocalToWorld;
+
+//Converts a SourceVertex into a DrawVertex by transforming from object space to world space.
+
+DrawVertex TransformSourceToDraw(SourceVertex i)
+{
+    DrawVertex o;
+    o.positionWS = mul(_LocalToWorld, float4(i.positionOS, 1)).xyz;
+    o.uv = i.uv;
+    return o;
+}
+
+void SetupAndOutputTriangle(DrawVertex a, DrawVertex b, DrawVertex c)
+{
+    float3 normalWS = GetNormalFromTriangle(a.positionWS, b.positionWS, c.positionWS);    
+    
+    DrawTriangle tri;
+    triangle.normalWS = normalWS;
+    tri.verts[0] = a;
+    tri.verts[1] = b;
+    tri.verts[2] = c;
+
+    //append the triangles we've drawn to the _DrawTriangles AppendStructuredBuffer
+    _DrawTriangles.Append(tri);
+}
+
+//numthreads defines the number of threads to be executed in a single thread group when a compute shader is dispatched. X*Y*Z is the total number in the group.
+//The ability to specify the size of the thread group across 3 dimensions allows individual threads to be accessed in a manner that replicates 2D and 3D structures.
+//In our example here, 128 threads will be run simulataneously, and hence this function will be run that many times simulataneously
+//We want this kernal to run once per source triangle. For instance, if we have 200 source triangles, we will need to dispatch two thread groups (as 128 * 2 = 256 )
+//The SV_DispatchThreadID semantic
+[numthreads(128,1,1)] 
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if((int)id.x >_NumSourceTriangles) //if we've already processed all our triangles, then return
+    {
+        return;
+    }
+
+    //Get the vertices making up each triangle in world space
+    int triStart = id.x * 3;
+    DrawVertex inputs[3];
+
+    inputs[0] = TransformSourceToDraw(_SourceVertices[triStart]);
+    inputs[1] = TransformSourceToDraw(_SourceVertices[triStart + 1]);
+    inputs[2] = TransformSourceToDraw(_SourceVertices[triStart + 2]);
+
+    //Calculate the centre of the triangle
+    DrawVertex centre; 
+    float3 triNormal = GetNormalFromTriangle(inputs[0].positionWS, inputs[1].positionWS, inputs[2].positionWS);
+    //We extrude the centre out from the triangle in the direction of its normal vector to produce a pyramid.
+    centre.positionWS = GetTriangleCentre(inputs[0].positionWS, inputs[1].positionWS, inputs[2].positionWS) + triNormal * _PyramidHeight; 
+    centre.uv = GetTriangleCentre(inputs[0].uv, inputs[1].uv, inputs[2].uv);
+
+    //Create three triangles. The indices of each triangle must wind clockwise in order to be rendered by Unity.
+    SetupAndOutputTriangle(inputs[0], inputs[1], centre);
+    SetupAndOutputTriangle(inputs[1], inputs[2], centre);
+    SetupAndOutputTriangle(inputs[2], inputs[0], centre);
+    //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}
