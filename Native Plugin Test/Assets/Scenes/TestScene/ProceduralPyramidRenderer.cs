@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -60,7 +61,24 @@ public class ProceduralPyramidRenderer : MonoBehaviour
     private const int _DrawTriangleStride = sizeof(float) * (3 + (3 + 2) * 3);
     private const int _IndirectArgsStride = sizeof(int) * 4;
 
-    private void OnEnable()
+    private Bounds TransformBoundsToWS(Bounds bounds)
+    {
+        //Get centre of mesh in world space
+        Vector3 centre = transform.TransformPoint(bounds.center);
+        Vector3 extents = bounds.extents;
+        //Transform extents from local to world space
+        Vector3 axisX = transform.TransformVector(extents.x, 0, 0);
+        Vector3 axisY = transform.TransformVector(0, extents.y, 0);
+        Vector3 axisZ = transform.TransformVector(0, 0, extents.z);
+
+        //Sum their absolute values to get the world extents 
+
+        extents.x = Mathf.Abs(axisX.x) + Mathf.Abs(axisX.y) + Mathf.Abs(axisX.z);
+        extents.y = Mathf.Abs(axisY.x) + Mathf.Abs(axisY.y) + Mathf.Abs(axisY.z);
+        extents.z = Mathf.Abs(axisZ.x) + Mathf.Abs(axisZ.y) + Mathf.Abs(axisZ.z);
+        return new Bounds(centre, extents);
+    }
+        private void OnEnable()
     {
         if (initialised) 
         {
@@ -74,6 +92,8 @@ public class ProceduralPyramidRenderer : MonoBehaviour
 
         bounds = sourceMesh.bounds;
         bounds.Expand(pyramidHeight);
+
+        bounds = TransformBoundsToWS(bounds);
 
         //Create the data to upload to the source vertex buffer
         SourceVertex[] sourceVertices = new SourceVertex[positions.Length];

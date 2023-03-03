@@ -4,26 +4,24 @@
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWTexture2D<float4> Result;
-
 //We need an input struct and an output. SourceVertex describes a vertex on the source mesh.
-struct SourceVertex{
+struct SourceVertex {
     float3 positionOS;
     float2 uv;
-}
+};
 
 //DrawVertex describes a vertex on the output mesh.
-struct DrawVertex{
+struct DrawVertex {
     float3 positionWS;
     float2 uv;
-}
+};
 
 //We have to insert three draw vertices at once so the triangle stays connected.
 struct DrawTriangle
 {
     float3 normalWS; //triangle normal; all 3 verts share this normal
     DrawVertex verts[3];
-}
+};
 
 
 
@@ -53,7 +51,7 @@ void SetupAndOutputTriangle(DrawVertex a, DrawVertex b, DrawVertex c)
     float3 normalWS = GetNormalFromTriangle(a.positionWS, b.positionWS, c.positionWS);    
     
     DrawTriangle tri;
-    triangle.normalWS = normalWS;
+    tri.normalWS = normalWS;
     tri.verts[0] = a;
     tri.verts[1] = b;
     tri.verts[2] = c;

@@ -1,7 +1,7 @@
 //returns the normal of a plane containing the triangle defined by the three vertices.
 float3 GetNormalFromTriangle(float3 a, float3 b, float3 c)
 {
-    return cross(b-a, c - a);
+    return cross(b-a, c-a);
 }
 
 //returns the centre of a triangle defined by three vertices.
